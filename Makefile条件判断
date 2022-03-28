@@ -1,0 +1,41 @@
+ifeq
+ifeq关键字用来判断两个参数是够相等，相等时条件成立为true，不相等为false。ifeq一般和变量结合使用：
+    mode = debug
+    hello: hello.c
+    ifeq ($(mode),debug)
+        @echo "debug mode" 
+        gcc -g -o hello hello.c
+    else
+        @echo "release mode"
+        gcc -o hello hello.c
+    endif
+    
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ make
+debug mode
+gcc -g -o hello hello.c
+
+ifneq 关键字
+
+ifneq 关键字和ifeq关键字恰恰相反，用来判断参数是否不相等。当比较的参数不相等时，条件语句才成立，值为true，否则为false。
+
+
+
+ifdef 关键字
+
+ifdef 关键字用来判断一个变量是否已经定义。如果变量的值非空（在Makefile中，没有定义的变量的值为空），表达式为真。
+    mode = 
+    hello: hello.c
+    ifdef mode
+        @echo "debug mode" 
+        gcc -g -o hello hello.c
+    else
+        @echo "release mode"
+        gcc -o hello hello.c
+    endif
+    
+    # make
+    release mode
+    gcc -o hello hello.c
+  ifndef 关键字
+
+ifndef关键字和ifdef相反，如果一个变量没有定义，表达式为真。  
