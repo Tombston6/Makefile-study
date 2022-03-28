@@ -1,0 +1,91 @@
+Makefile自动变量
+这种变量一般称为自动变量，自动变量是局部变量，作用域范围在当前的规则内
+
+    $@：目标
+    $^：所有目标依赖
+    $<：目标依赖列表中的第一个依赖
+    $?：所有目标依赖中被修改过的文件
+
+    .PHONY: clean
+    CC  = gcc
+    BIN = a.out
+    OBJS = hello.o module.o
+    $(BIN): $(OBJS)
+        @echo "start compiling..."
+        @echo $(OBJS)
+        $(CC) -o $@ $^
+        @echo "compile done"
+    hello.o: hello.c
+        $(CC) -c -o $@ $^
+    module.o: module.c
+        $(CC) -c -o $@ $^
+    clean:
+        rm -f $(BIN) $(OBJS)
+     
+不常见的自动变量：
+
+    $%：当规则的目标是一个静态库文件时，$%代表静态库的一个成员名
+    $+：类似$^，但是保留了依赖文件中重复出现的文件
+    $*：在模式匹配和静态模式规则中，代表目标模式中%的部分。比如hello.c，当匹配模式为%.c时，$*表示hello
+    $(@D)：表示目标文件的目录部分
+    $(@F)：表示目标文件的文件名部分
+    $(*D)：在模式匹配中，表示目标模式中%的目录部分
+    $(*F)：在模式匹配中，表示目标模式中%的文件名部分
+    -: ：告诉make在编译时忽略所有的错误
+    @: ：告诉make在执行命令前不要显示命令
+    $: ：
+    
+
+
+Makefile变量替换
+使用指定字符串替换掉变量中的字符串
+    .PHONY: all
+    SRC := main.c sub.c
+    OBJ := $(SRC:.c=.o)
+    all:
+        @echo "SRC = $(SRC)"
+        @echo "OBJ = $(OBJ)"
+        
+    # make
+    SRC = main.c sub.c
+    OBJ = main.o sub.o
+    
+模式匹配替换
+
+使用匹配符%匹配变量，使用 % 保留变量值中的指定字符串，然后其他部分使用指定字符串代替。
+    .PHONY: all
+    SRC := main.c sub.c
+    OBJ := $(SRC:%.c=%.o)
+    all:
+        @echo "SRC = $(SRC)"
+        @echo "OBJ = $(OBJ)"
+        
+        
+Makefile 环境变量
+如编译参数CFLAGS、SHELL、MAKE等
+若Makefile中有用户自定义的同名变量，系统环境变量将会被用户自定义的变量覆盖。
+若用户在命令行中传递跟系统环境变量同名的变量，系统环境变量也会被传递的同名变量覆盖。
+PHONY:all
+CFLAGS = -g
+all:
+    @echo "CFLAGS = $(CFLAGS)"
+    @echo "SHELL = $(SHELL)"
+    @echo "MAKE = $(MAKE)"
+    @echo "HOSTNAME = $(HOSTNAME)"
+    
+  make HOSTNAME=zhaixue.cc
+  
+  
+  Makefile 通过export传递变量
+  我们通过命令行的形式给一个Makefile传递变量，除此之外，我们还可以通过export命令给Makefile传递变量：
+  PHONY:all
+all:
+    @echo "WEB = $(WEB)"
+    
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ export WEB=krs.cc
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ make
+WEB = krs.cc
+
+在shell环境下使用export命令，就相当于将WEB变量声明为系统环境变量。
+当make解析Makefile时，会自动引入系统环境变量，包括刚刚声明的WEB，
+所以我们就可以在Makefile中看到WEB变量的打印值了。
