@@ -1,0 +1,27 @@
+GNU make 提供了大量的函数用来处理文件名、变量、文本和命令。通过这些函数，用户可以节省很多精力，编写出更加灵活和健壮的Makefile。函数的使用和变量引用的展开方式相同：
+
+    函数主要分为两类：make内嵌函数和用户自定义函数。对于 GNU make内嵌的函数，直接引用就可以了；对于用户自定义的函数，要通过make的call函数来间接调用。
+    函数和参数列表之间要用空格隔开，多个参数之间使用逗号隔开。
+    如果在参数中引用了变量，变量的引用建议和函数引用使用统一格式：要么是一对小括号，要么是一对大括号。
+    
+     SRC  = $(wildcard *.c)
+    HEAD = $(wildcard *.h)
+    all:
+        @echo "SRC = $(SRC)"
+        @echo "HEAD = $(HEAD)"  
+    
+    
+用户自定义函数
+
+GNU make提供了大量的内嵌函数，大大方便了用户Makefile的编写。但有时候根据需要，用户也可以自定义一些函数，然后在Makefile中引用它们： 
+    PHONY: all
+    define func
+        @echo "pram1 = $(0)"
+        @echo "pram2 = $(1)"
+    endef
+    all:
+        $(call func, hello zhaixue.cc)
+        
+    # make
+    pram1 = func
+    pram2 =  hello zhaixue.cc      
