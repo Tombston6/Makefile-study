@@ -1,0 +1,130 @@
+Makefile 递归执行
+
+在实际工程项目中，各个源文件通常存放在各个不同的目录中，make在编译工程项目时，
+会依次遍历各个不同的子目录，编译每个子目录下的源文件，这是如何做到的呢？
+很简单，使用下面的命令就可以了：
+ make -C subdir1 subdir2 subdir3 ...
+ 等价于
+    # cd subdir1 && $(MAKE)
+    # cd subdir2 && $(MAKE)
+    # cd subdir3 && $(MAKE)
+
+当然，在subdir1、subdir2、subdir3子目录下，也得有对应的Makefile文件，否则make就会运行报错
+
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ tree
+.
+├── Makefile
+├── subdir1
+│   └── Makefile
+├── subdir2
+│   └── Makefile
+└── subdir3
+    └── Makefile
+
+3 directories, 4 files
+
+底层Makefile代码
+.PHONY:all
+all:
+        @echo "make start"
+        make -C subdir1
+        make -C subdir2
+        make -C subdir3
+        @echo "make done" 
+        
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ make
+make start
+make -C subdir1
+make[1]: Entering directory '/home/krs/krs/C/Makefile/day02/subdir1'
+echo "make in subdir1"
+make in subdir1
+make[1]: Leaving directory '/home/krs/krs/C/Makefile/day02/subdir1'
+make -C subdir2
+make[1]: Entering directory '/home/krs/krs/C/Makefile/day02/subdir2'
+echo "make in subdir2"
+make in subdir2
+make[1]: Leaving directory '/home/krs/krs/C/Makefile/day02/subdir2'
+make -C subdir3
+make[1]: Entering directory '/home/krs/krs/C/Makefile/day02/subdir3'
+echo "make in subdir3"
+make in subdir3
+make[1]: Leaving directory '/home/krs/krs/C/Makefile/day02/subdir3'
+make done
+
+
+Makefile 递归传递变量 
+修改顶层目录的主Makefile，讲变量WEB使用export声明为环境变量：
+
+
+    .PHONY:all
+    export WEB = zhaixue.cc
+    all:
+        @echo "make start"
+        @echo "WEB = $(WEB)"
+        make -C subdir1
+        make -C subdir2
+        make -C subdir3
+        @echo "make done"
+使用export来传递
+
+
+Makefile override 指示符 
+一个变量可以定义在Makefile中，也可以在执行make时通过命令行定义。
+一个在Makefile中定义的变量，如果在执行make命令时又定义了一次，那么它将替代在Makefile中出现的同名变量。
+也就是说，在一个Makefile中使用define、:=、= 定义的变量，我们可以在执行make命令时重新指定这个变量的值。
+    
+    .PHONY: all
+    web = www.zhaixue.cc
+    all:
+        @echo "web = $(web)"
+        
+     # make
+    web = www.zhaixue.cc
+    # make web=wanglitao.taobao.com
+    web = wanglitao.taobao.com
+    
+如果不希望在命令行指定的变量值替代在Makefile中的原来定义，那么我们可以在Makefile中使用指示符 override 对这个变量进行声明：
+    .PHONY: all
+    override web = www.zhaixue.cc
+    all:
+        @echo "web = $(web)"
+        
+    # make web=wanglitao.taobao.com
+    web = www.zhaixue.cc
+    
+Makefile中的变量分为多种：追加变量、立即变量、展开变量、使用define定义的变量，它们都可以使用override修饰：
+    .PHONY: all
+    override fruits = apple
+    fruits += banana
+    all:
+        @echo "fruits = $(fruits)"
+        
+    # make
+    fruits = apple
+    
+    
+    .PHONY: all
+    override fruits = apple
+    override fruits += banana
+    all:
+        @echo "fruits = $(fruits)"
+        
+# make
+fruits = apple banana
+
+override的主要目的是为了使用户可以改变或者追加哪些使用make命令行指定的变量的定义。
+从另一个角度上看，就是实现了在Makefile中增加或者修改命令行参数的一种机制。
+我们在编译程序时，可能会有这样一些需求：通过命令行来指定一些额外的编译参数。
+而对于一些通用或者必需的参数则在Makefile中指定，一些特殊的参数则在命令行中指定。
+比如在编译程序时，无论在命令行指定什么参数，编译器在编译时必需打开 -Wall选项，那么在Makefile中的CFLAGS应该这样定义：
+    .PHONY: all
+    override CFLAGS += -Wall
+    all:
+        @echo "CFLAGS = $(CFLAGS)"
+当执行make命令时，默认的CFLAGS是-Wall；当执行make CFLAGS=-g时，CFLAGS就变成了 -g -Wall：
+
+    # make
+    CFLAGS = -Wall
+    # make CFLAGS=-g
+    CFLAGS = -g -Wall
+如果不使用override来修饰那么make CFLAGS=-g 输出的命令是CFLAGS = -g
