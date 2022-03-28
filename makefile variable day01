@@ -1,0 +1,39 @@
+Makefile中定义变量
+
+CC = gcc
+BIN = a.out
+OBJS = hello.o module.o
+
+使用$(val)或${val}的形式去引用它
+$(BIN): $(OBJS)
+  echo "start compiling..."
+  $(CC) -c -o $(BIN) $(OBJS)
+
+条件赋值： ?=
+条件赋值是指一个变量如果没有被定义过，就直接给它赋值；如果之前被定义过，那么这条赋值语句就什么都不做。如下面的语句：
+    CC = gcc
+    CC ?= arm-linux-gnueabi-gcc
+    $(BIN): $(OBJS)
+        @echo $(CC)
+        $(CC) -o $(BIN) $(OBJS)
+
+追加赋值: +=
+追加赋值是指一个变量，以前已经被赋值，现在想给它增加新的值，此时可以使用+=追加赋值。如下面的语句：
+    OBJS = hello.o
+    OBJS += module.o
+   
+立即变量和延迟变量
+立即变量使用 := 操作符进行赋值，在解析阶段就直接展开了，顾名思义，立即展开变量。
+延迟变量则是使用 = 操作符进行赋值，在make解析Makefile阶段不会立即展开，而是等到实际使用这个变量时才展开，获得其真正的值。
+    a = 1
+    b = 2
+    val_a := $(a)
+    val_b  = $(b)
+    a = 10
+    b = 20
+    test:
+        echo $(val_a)
+        echo $(val_b)
+ val_a是立即变量，当make解析到:=赋值符号时，会把$(a)变量的值立即赋值给val_a，虽然后面a的值发生了变化，但val_a因为已经展开，所以值就不再发生变化。
+ 而val_b则不同，因为是延迟展开变量，所以，当make解析到 = 符号时，并没有立即把$(b)的值赋值给val_b，而是在运行echo命令时才对其展开，
+ 因为此时b的值已经是20，所以$(val_b)的值也是20
