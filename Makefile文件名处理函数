@@ -1,0 +1,138 @@
+dir函数：取路径名的目录
+dir函数用来从一个路径名中截取目录的部分。
+    $(dir NAMES…)
+    
+    .PHONY: all
+    LIST = /home/wit/banana.c /usr/include/stdio.h
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "dir = $(dir $(LIST))"
+        
+     # make
+    LIST = /home/wit/banana.c /usr/include/stdio.h
+    dir = /home/wit/ /usr/include/
+    
+    
+    
+    
+notdir函数：取文件名
+notdir函数和dir函数实现完全相反的功能：从一个文件路径名中去文件名，而不是目录。notdir函数的使用方法和dir函数相同。
+    .PHONY: all
+    LIST = /home/wit/banana.c /usr/include/stdio.h
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "file = $(notdir $(LIST))"
+        
+    # make
+    LIST = /home/wit/banana.c /usr/include/stdio.h
+    file = banana.c stdio.h
+    
+    
+    
+    
+suffix函数：取文件名后缀
+suffix函数从一系列文件名序列中，取出各个文件名的后缀。
+    $(suffix NAMES…)
+文件名的后缀是文件名中以点号 . 开始（包括点号）的部分。若文件名没有后缀， suffix函数则返回空。
+    .PHONY: all
+    LIST = /home/wit/banana.c /usr/include/stdio.h
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "suffix = $(suffix $(LIST))"
+        
+      # make
+    LIST = /home/wit/banana.c /usr/include/stdio.h
+    suffix = .c .h
+    
+  
+  
+
+basename函数：取文件名前缀
+basename函数从一系列文件名序列中，取出各个文件名的前缀部分：
+   $(basename NAMES…)
+如果一个文件名中包括多个点号，basename函数返回最后一个点号之前的文件名部分；如果一个文件名没有前缀，函数返回空字符串。
+    .PHONY: all
+    LIST = /home/wit/banana.c /usr/include/vmlinux.lds.S
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "basename = $(basename $(LIST))"
+        
+        
+     # make
+    LIST = /home/wit/banana.c /usr/include/vmlinux.lds.S
+    
+    
+    
+    
+addsuffix函数：给文件名加后缀
+addsuffix函数的作用是：给文件列表中的每个文件名添加后缀SUFFIX
+ $(addsuffix SUFFIX, NAMES…）
+ 
+     .PHONY: all
+    LIST = apple banana peach
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "addsuffix = $(addsuffix .c, $(LIST))"
+        
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ make
+file = apple can orange banana english
+addsuffix = apple.c can.c orange.c banana.c english.c
+
+
+
+
+addprefix函数：给文件名加前缀
+addprefix函数的作用是：给文件列表中的每个文件名添加一个前缀PREFIX
+    $(addprefix PREFIX, NAMES…)
+    
+    .PHONY: all
+    LIST = apple.c banana.c peach.c
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "addsuffix = $(addprefix /home/wit/, $(LIST))"
+        
+    make
+    LIST = apple.c banana.c peach.c
+    addsuffix = /home/wit/apple.c /home/wit/banana.c /home/wit/peach.c
+    
+    
+    
+    
+join函数：单词连接
+join函数的作用是：将字符串LIST1和字符串LIST2的各个单词依次连接，合并为新的单词构成的字符串
+    $(join LIST1,LIST2)
+    
+    .PHONY: all
+    LIST1 = apple banana peach
+    LIST2 = .c .h .s
+    LIST  = $(join $(LIST1), $(LIST2))
+    all:
+        @echo "LIST1 = $(LIST1)"
+        @echo "LIST2 = $(LIST2)"
+        @echo "LIST = $(LIST)"
+        
+    # make
+    LIST1 = apple banana peach
+    LIST2 = .c .h .s
+    LIST = apple.c banana.h peach.s
+  如果两个字符串中的单词个数不相等，则只合并前面的单词，剩下的单词不合并  
+  
+  
+  
+  
+  wildcard函数：列出所有符号匹配模式的文件
+  列出当前目录下所有符合PATTREN模式的文件名
+      $(wildcard PATTERN)
+其中PATTREN可以使用shell能识别的通配符：？、*等。
+
+    .PHONY: all
+    LIST  = $(wildcard *.c)
+    all:
+        @echo "LIST = $(LIST)"
+        
+如果要匹配其他文件夹的需要将*.c前加入路径        
+        
+    # ls
+    add.c  add.h  hello.c  main.c  makefile  sub.c  sub.h
+    # make
+    LIST = hello.c main.c add.c sub.c
