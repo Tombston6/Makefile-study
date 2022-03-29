@@ -1,0 +1,34 @@
+在Makefile中表示一个文件名时，可以使用通配符。在Makefile中可以使用的通配符有：* 、? 、 […]。
+通配符的使用方法和含义和在shell中一样。比如：*.c 表示当前目录下所有以“.c”结尾的文件。
+除此之外，Makefile还有经常使用的几个自动变量也可以看做特殊通配符：
+
+    $@：所有目标文件
+    $^：目标依赖的所有文件
+    $<：第一个依赖文件
+    $?：所有更新过的依赖文件
+在Makefile中，通配符主要用在两个场合：
+用在规则的目标和依赖中：make在读取Makefile时会自动对其进行匹配处理（通配符展开）。如：
+    test: *.o
+        gcc -o $@ $^
+    *.o: *.c
+        gcc -c $^
+        
+用在规则的命令中：通配符的通配处理在shell执行命令时完成。如：
+    clean:
+        rm -f *.o
+
+除了以上两种情况，在其他地方都不能直接使用通配符。需要一些函数（如wildcard）来实现。
+如果想列举当前目录下的所有C文件，可以直接使用wildcard函数：
+    $(wildcard *.c)
+    
+    
+波浪线 ~
+
+在Linux系统中，波浪线表示HOME目录，以波浪线表示的文件名也表示特殊的含义。以我当前使用的Ubuntu为例，登录用户名为wit，则
+
+    ~：表示/home/wit这个目录
+    ~/.bashrc：表示/home/wit/.bashrc文件
+    ~wit：表示用户wit的HOME目录，即/home/wit
+    ~root：表示用户root的HOME目录，即/root
+    ~wit/.bashrc：表示/home/wit/.bashrc文件
+    ~root/.bashrc：表示/root/.bashrc文件
