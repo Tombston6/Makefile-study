@@ -24,4 +24,152 @@ GNU make提供了大量的内嵌函数，大大方便了用户Makefile的编写�
         
     # make
     pram1 = func
-    pram2 =  hello zhaixue.cc      
+    pram2 =  hello zhaixue.cc    
+    
+    
+    
+    
+foreach函数 
+在Makefile中如果想做一些循环或遍历操作时，可以使用foreach函数：
+    $(foreach VAR,LIST,TEXT)
+foreach函数的工作过程是：把LIST中使用空格分割的单词依次取出并赋值给变量VAR，然后执行TEXT表达式。
+重复这个过程，直到遍历完LIST中的最后一个单词。函数的返回值是TEXT多次计算的结果。
+使用示例：假设一个项目，MP3播放器，分别有lcd、keyboad、usb、media目录，分别存放不同的源文件：
+    # tree
+    .
+    ├── keyboard
+    │   └── key.c
+    ├── lcd
+    │   └── lcd.c
+    ├── makefile
+    ├── media
+    │   └── decode.c
+    └── usb
+        └── usb.c
+        
+    .PHONY: all
+    dirs = lcd usb media keyboard
+    srcs = $(foreach dir, $(dirs), $(wildcard $(dir)/*))
+    all:
+        @echo "srcs = $(srcs)"
+        
+    # make
+    srcs =  lcd/lcd.c  usb/usb.c  media/decode.c  keyboard/key.c
+
+
+if 函数
+Makefile 中的 if 函数提供了在一个函数上下文中实现条件判断的功能，类似于ifeq关键字，if函数的使用格式如下：
+    $(if CONDITION,THEN-PART)
+    $(if CONDITION,THEN-PART [,ELSE-PART])
+if 函数的第一个参数 CONDITION表示条件判断，展开后如果非空，则条件为真，执行 THEN-PART部分；
+否则，如果有ELSE-PART部分，则执行ELSE-PART部分。
+if函数的返回值即执行分支（THEN-PART或ELSE-PART）的表达式值。如果没有ELSE-PART，则返回一个空字符串。
+
+
+
+
+call 函数
+如果想调用用户自定义的函数，则只能使用call函数来间接调用了：
+    PHONY: all
+    define func
+        @echo "pram1 = $(0)"
+        @echo "pram2 = $(1)"
+    endef
+    all:
+        $(call func, hello zhaixue.cc)
+        
+call函数是唯一一个可以用来创建新的参数化的函数。call函数不仅可以用来调用一个用户自定义函数并传参，还可以向一个表达式传参：
+    $(call <expression>,<parm1>,<parm2>,<parm3>...)
+    
+    
+    .PHONY: all
+    param = $(1) $(2)
+    reverse_param = $(2) $(1)
+    str1 = $(call param, hello, zhaixue.cc)
+    str2 = $(call reverse_param, hello, zhaixue.cc)
+    all:
+        @echo "str1 = $(str1)"
+        @echo "str2 = $(str2)"
+
+
+    # make
+    str1 =  hello  zhaixue.cc
+    str2 =  zhaixue.cc  hello
+    
+    
+    
+    
+origin函数 
+origin函数的作用就是告诉你，你所关注的一个变量是从哪里来的。函数的使用格式为：
+    $(origin <variable>)
+如果变量没有定义，origin函数的返回值为：undefined，不同的返回值代表变量的类型不同。常见的返回值如下;
+
+    default：变量是一个默认的定义，比如 CC 这个变量
+    file：这个变量被定义在Makefile中
+    command line：这个变量是被命令行定义的
+    override：这个变量是被override指示符重新定义过的
+    automatic：一个命令运行中的自动化变量
+    
+
+
+    .PHONY: all
+    WEB = www.zhaixue.cc
+    web_type = $(origin WEB)
+    all:
+        @echo "web_type = $(web_type)"
+        @echo "cc_type  = $(origin CC)"
+        @echo "cmd_type = $(origin CMD)"
+        
+    # make
+    web_type = file
+    cc_type = default
+    cmd_type = undefined
+    # make CMD=pwd
+    web_type = file
+    cc_type = default
+    cmd_type = command line
+    
+    
+   
+   
+   
+shell 函数
+如果你想在Makefile中运行shell命令，可以使用 shell 函数来完成这个功能。
+shell 函数的参数是shell命令，它和反引号 `` 具有相同的功能。shell命令的运行结果即为shell函数的返回值。
+    .PHONY: all
+    current_path = $(shell pwd)
+    all:
+        @echo "current_path = $(current_path)"
+        
+     root@ubuntu:/home/makefile/demo# make
+    current_path = /home/makefile/demo
+    
+    
+  
+  
+  
+error 函数         warning函数
+当make执行过程中检测到某些错误，就可以给用户提供一些信息，并且可以控制make的是否继续执行下去。
+    $(error TEXT…)
+    
+    .PHONY: all
+    all:
+        @echo "make command start..."
+        $(error find a error)
+        @echo "make command end..."
+        
+当执行make命令时，make会执行默认目标all下的命令，当遇到error函数时，就会给用户一个错误提示信息，并终止make的继续执行：
+    # make
+    makefile:5: *** find a error.  Stop.
+    
+需要注意的是：error函数是在函数被调用时才会提示信息并终止make的继续执行。
+如果函数出现在命令中，或者出现在一个递归变量的定义里，在读取Makefile时不会出现错误。
+而只有包含error函数引用的命令执行时，或者包含这个函数的定义变量被展开时，才会提示错误信息TEXT，并终止make的运行。
+
+
+
+
+warning 函数
+
+warning函数跟error函数类似，也会给用户提示信息，唯一的区别是：warning函数不会终止make的运行，make会继续运行下去。
+    $(warning TEXT…)
