@@ -1,0 +1,186 @@
+subst函数
+subst函数用来实现字符串的替换，将字符串text中的old替换为new
+    $(subst old,new,text)
+    
+例子：
+将当前目录下的所有c文件的名称xx.c转换为xx.o
+.PHONY: all
+SRC  = $(wildcard *.c)
+OBJ  = $(subst .c,.o,$(SRC))
+all:
+    @echo "OBJ = $(OBJ)"
+    @echo $(subst banana, apple, "banana is good, I like banana")
+    
+patsubst函数
+patsubst函数主要用来模式替换：使用通配符 % 代表一个单词中的若干字符，
+在PATTERN和REPLACEMENT如果都包含这个通配符，表示两者表示的是相同的若干个字符，并执行替换操作。
+$(patsubst PATTERN, REPLACEMENT, TEXT)
+如果我们想把某个目录下的所有.c文件皆为的文件名转换为以.o皆为的目标文件名，相比subst，使用patsubst会更加方便：
+.PHONY: all
+SRC  = $(wildcard *.c)
+OBJ  = $(patsubst %.c, %.o, $(SRC))
+all:
+    @echo "OBJ = $(OBJ)"
+    
+
+
+strip函数
+strip函数是一个去空格函数：一个字符串通常有多个单词，单词之间使用一个或多个空格进行分割，
+strip函数用来将多个连续的空字符合并成一个，并去掉字符串开头、末尾的空字符。
+空字符包括：空格、多个空格、tab等不可显示的字符。
+.PHONY: all
+STR =     hello a    b   c   
+STRIP_STR = $(strip $(STR))
+all:
+    @echo "STR = $(STR)"
+    @echo "STRIP_STR = $(STRIP_STR)"
+
+
+# make
+STR = hello a    b   c   
+STRIP_STR = hello a b c
+
+
+
+
+findstring 函数
+findstring函数用来查找一个字符串。使用格式如下：
+$(findstring FIND, IN)
+findstring函数会在字符串IN中查找“FIND”字符串，如果找到，则返回字符串FIND，否则，返回空。
+.PHONY: all
+STR =     hello a    b   c   
+FIND = $(findstring hello, $(STR))
+all:
+    @echo "STR = $(STR)"
+    @echo "FIND = $(FIND)"
+
+    # make
+    STR = hello a    b   c   
+    FIND = hello
+    
+    
+    
+filter 函数
+filter函数用来过滤掉一个指定的字符串，使用格式如下：
+    $(filter PATTERN…,TEXT)
+.PHONY: all
+FILE = a.c b.h c.s d.cpp   
+SRC = $(filter %.c, $(FILE))
+all:
+    @echo "FILE = $(FILE)"
+    @echo "SRC = $(SRC)"
+
+    # make
+    FILE = a.c b.h c.s d.cpp   
+    SRC = a.c
+    
+    
+  filter-out 函数
+  filer-out函数是一个反过滤函数，功能和filter函数恰恰相反：该函数会过滤掉所有符合PATTERN模式的单词，保留所有不符合此模式的单词。
+  
+  .PHONY: all
+  FILE = a.c b.h c.s d.cpp   
+  SRC = $(filter-out %.c, $(FILE))
+  all:
+      @echo "FILE = $(FILE)"
+      @echo "SRC = $(SRC)"
+
+    # make
+    FILE = a.c b.h c.s d.cpp   
+    SRC = b.h c.s d.cpp
+    
+ 
+ sort函数：单词排序
+ $(sort LIST)
+ sort函数对字符串LIST中的单词以首字母为准进行排序，并删除重复的单词。
+.PHONY: all
+file  = apple can orange banana english
+SRC = $(sort $(file))
+all:
+        echo $(SRC)
+ 
+krs@krs-Inspiron-3559:~/krs/C/Makefile/day02$ make
+echo apple banana can english orange
+
+
+
+
+word函数：取单词
+word函数的作用是从一个字符串TEXT中，按照指定的数目N取单词：
+$(word N,TEXT)
+函数的返回值是字符串TEXT中的第N个单词。如果N的值大于字符串中单词的个数，返回空；如果N为0，则出错。
+    .PHONY: all
+    LIST = banana pear apple peach orange 
+    word1 = $(word 1, $(LIST))
+    word2 = $(word 2, $(LIST))
+    word3 = $(word 3, $(LIST))
+    word4 = $(word 4, $(LIST))
+    word5 = $(word 5, $(LIST))
+    word6 = $(word 6, $(LIST))
+    all:
+        @echo "word1 = $(word1)"
+        @echo "word2 = $(word2)"
+        @echo "word3 = $(word3)"
+        @echo "word4 = $(word4)"
+        @echo "word5 = $(word5)"
+        @echo "word6 = $(word6)"
+        
+    # make
+    word1 = banana
+    word2 = pear
+    word3 = apple
+    word4 = peach
+    word5 = orange
+    word6 =
+    
+
+
+
+wordlist函数：取字串
+wordlist函数用来从一个字符串TEXT中取出从N到M之间的一个单词串：
+    $(wordlist N, M, TEXT)
+N 和 M都是从1开始的一个数字，函数的返回值是字符串TEXT中从N到M的一个单词串。当N比字符串TEXT中的单词个数大时，函数返回空。
+    .PHONY: all
+    LIST = banana pear apple peach orange 
+    sub_list = $(wordlist 1, 3, $(LIST))
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "sub_list = $(sub_list)"
+        
+    # make
+    LIST = banana pear apple peach orange 
+    sub_list = banana pear apple
+    
+    
+    
+    
+words函数：统计单词数目
+words函数用来统计一个字符串TEXT中单词的个数：
+$(words TEXT）
+    .PHONY: all
+    LIST = banana pear apple peach orange 
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "LIST len = $(words $(LIST))
+        
+    # make
+    LIST = banana pear apple peach orange 
+    LIST len = 5
+    
+    
+    
+    
+firstword函数：取首个单词
+$(firstword NAMES…)
+$(word 1,TEXT)
+
+
+    .PHONY: all
+    LIST = banana pear apple peach orange 
+    all:
+        @echo "LIST = $(LIST)"
+        @echo "first word = $(firstword $(LIST))"
+        
+    # make
+    LIST = banana pear apple peach orange 
+    first word = banana
